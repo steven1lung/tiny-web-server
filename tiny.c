@@ -355,7 +355,7 @@ void serve_static(int out_fd, int in_fd, http_request *req,
 		if(sendfile(out_fd, in_fd, &offset, req->end - req->offset) <= 0) {
 			break;
 		}
-		printf("offset: %d \n\n", offset);
+		printf("offset: %d \n\n", (unsigned int)offset);
 		close(out_fd);
 		break;
 	}
