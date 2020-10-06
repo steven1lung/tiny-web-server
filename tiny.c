@@ -382,8 +382,8 @@ void parse_request(int fd, http_request *req) {
 
 
 void log_access(int status, struct sockaddr_in *c_addr, http_request *req) {
-	printf("%s:%d %d - %s\n", inet_ntoa(c_addr->sin_addr),
-		   ntohs(c_addr->sin_port), status, req->filename);
+	printf("%s:%d %d - '%s' (%s)\n", inet_ntoa(c_addr->sin_addr),
+		   ntohs(c_addr->sin_port), status, req->filename, get_mime_type(req->filename));
 }
 
 void client_error(int fd, int status, char *msg, char *longmsg) {
