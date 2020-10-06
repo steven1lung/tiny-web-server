@@ -19,8 +19,17 @@
 #define MAXLINE 1024   /* max length of a line */
 #define RIO_BUFSIZE 1024
 
+#ifndef DEFAULT_PORT
 #define DEFAULT_PORT 9999 /* use this port if none given as arg to main() */
+#endif
+
+#ifndef FORK_COUNT
 #define FORK_COUNT 4
+#endif
+
+#ifndef NO_LOG_ACCESS
+#define LOG_ACCESS
+#endif
 
 typedef struct {
 	int rio_fd;                 /* descriptor for this buf */
@@ -380,11 +389,12 @@ void parse_request(int fd, http_request *req) {
 	url_decode(filename, req->filename, MAXLINE);
 }
 
-
+#ifdef LOG_ACCESS
 void log_access(int status, struct sockaddr_in *c_addr, http_request *req) {
 	printf("%s:%d %d - '%s' (%s)\n", inet_ntoa(c_addr->sin_addr),
 		   ntohs(c_addr->sin_port), status, req->filename, get_mime_type(req->filename));
 }
+#endif
 
 void client_error(int fd, int status, char *msg, char *longmsg) {
 	char buf[MAXLINE];
@@ -419,14 +429,18 @@ void serve_static(int out_fd, int in_fd, http_request *req,
 		if(sendfile(out_fd, in_fd, &offset, req->end - req->offset) <= 0) {
 			break;
 		}
+#ifdef LOG_ACCESS
 		printf("offset: %d \n\n", (unsigned int)offset);
+#endif
 		close(out_fd);
 		break;
 	}
 }
 
 void process(int fd, struct sockaddr_in *clientaddr) {
+#ifdef LOG_ACCESS
 	printf("accept request, fd is %d, pid is %d\n", fd, getpid());
+#endif
 	http_request req;
 	parse_request(fd, &req);
 
@@ -456,7 +470,9 @@ void process(int fd, struct sockaddr_in *clientaddr) {
 		}
 		close(ffd);
 	}
+#ifdef LOG_ACCESS
 	log_access(status, clientaddr, &req);
+#endif
 }
 
 void print_help()
@@ -502,7 +518,6 @@ int main(int argc, char** argv) {
 			exit(1);
 		}
 	}
-
 	printf("serve directory '%s'\n", path);
 
 	listenfd = open_listenfd(default_port);

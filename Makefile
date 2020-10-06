@@ -1,6 +1,8 @@
 CC ?= cc
 CFLAGS ?= -Wall -O2
-# --std=c99
+#-DNO_LOG_ACCESS
+#-DDEFAULT_PORT=9000
+#-DFORK_COUNT=2
 
 all: tiny
 
