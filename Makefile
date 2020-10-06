@@ -1,5 +1,6 @@
 CC ?= cc
-CFLAGS ?= -Wall -O2 --std=c99
+CFLAGS ?= -Wall -O2
+# --std=c99
 
 all: tiny
 
