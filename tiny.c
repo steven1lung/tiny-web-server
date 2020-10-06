@@ -59,20 +59,20 @@ mime_map meme_types [] = {
 
 char *default_mime_type = "text/plain";
 
-void rio_readinitb(rio_t *rp, int fd){
+void rio_readinitb(rio_t *rp, int fd) {
 	rp->rio_fd = fd;
 	rp->rio_cnt = 0;
 	rp->rio_bufptr = rp->rio_buf;
 }
 
-ssize_t writen(int fd, void *usrbuf, size_t n){
+ssize_t writen(int fd, void *usrbuf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 	char *bufp = usrbuf;
 
-	while (nleft > 0){
-		if ((nwritten = write(fd, bufp, nleft)) <= 0){
-			if (errno == EINTR){  /* interrupted by sig handler return */
+	while (nleft > 0) {
+		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
+			if (errno == EINTR) {  /* interrupted by sig handler return */
 				nwritten = 0;    /* and call write() again */
 			}
 			else{
@@ -95,18 +95,18 @@ ssize_t writen(int fd, void *usrbuf, size_t n){
  *    read() if the internal buffer is empty.
  */
 /* $begin rio_read */
-static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n){
+static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n) {
 	int cnt;
-	while (rp->rio_cnt <= 0){  /* refill if buf is empty */
+	while (rp->rio_cnt <= 0) {  /* refill if buf is empty */
 
 		rp->rio_cnt = read(rp->rio_fd, rp->rio_buf,
 						   sizeof(rp->rio_buf));
-		if (rp->rio_cnt < 0){
-			if (errno != EINTR){ /* interrupted by sig handler return */
+		if (rp->rio_cnt < 0) {
+			if (errno != EINTR) { /* interrupted by sig handler return */
 				return -1;
 			}
 		}
-		else if (rp->rio_cnt == 0){  /* EOF */
+		else if (rp->rio_cnt == 0) {  /* EOF */
 			return 0;
 		}
 		else
@@ -115,7 +115,7 @@ static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n){
 
 	/* Copy min(n, rp->rio_cnt) bytes from internal buf to user buf */
 	cnt = n;
-	if (rp->rio_cnt < n){
+	if (rp->rio_cnt < n) {
 		cnt = rp->rio_cnt;
 	}
 	memcpy(usrbuf, rp->rio_bufptr, cnt);
@@ -127,18 +127,18 @@ static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n){
 /*
  * rio_readlineb - robustly read a text line (buffered)
  */
-ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen){
+ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) {
 	int n, rc;
 	char c, *bufp = usrbuf;
 
-	for (n = 1; n < maxlen; n++){
-		if ((rc = rio_read(rp, &c, 1)) == 1){
+	for (n = 1; n < maxlen; n++) {
+		if ((rc = rio_read(rp, &c, 1)) == 1) {
 			*bufp++ = c;
-			if (c == '\n'){
+			if (c == '\n') {
 				break;
 			}
-		} else if (rc == 0){
-			if (n == 1){
+		} else if (rc == 0) {
+			if (n == 1) {
 				return 0; /* EOF, no data read */
 			}
 			else{
@@ -152,16 +152,16 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen){
 	return n;
 }
 
-void format_size(char* buf, struct stat *stat){
-	if(S_ISDIR(stat->st_mode)){
+void format_size(char* buf, struct stat *stat) {
+	if(S_ISDIR(stat->st_mode)) {
 		sprintf(buf, "%s", "[DIR]");
 	} else {
 		off_t size = stat->st_size;
-		if(size < 1024){
+		if(size < 1024) {
 			sprintf(buf, "%lu", size);
-		} else if (size < 1024 * 1024){
+		} else if (size < 1024 * 1024) {
 			sprintf(buf, "%.1fK", (double)size / 1024);
-		} else if (size < 1024 * 1024 * 1024){
+		} else if (size < 1024 * 1024 * 1024) {
 			sprintf(buf, "%.1fM", (double)size / 1024 / 1024);
 		} else {
 			sprintf(buf, "%.1fG", (double)size / 1024 / 1024 / 1024);
@@ -169,7 +169,7 @@ void format_size(char* buf, struct stat *stat){
 	}
 }
 
-void handle_directory_request(int out_fd, int dir_fd, char *filename){
+void handle_directory_request(int out_fd, int dir_fd, char *filename) {
 	char buf[MAXLINE], m_time[32], size[16];
 	struct stat statbuf;
 	sprintf(buf, "HTTP/1.1 200 OK\r\n%s%s%s%s%s",
@@ -182,11 +182,11 @@ void handle_directory_request(int out_fd, int dir_fd, char *filename){
 	DIR *d = fdopendir(dir_fd);
 	struct dirent *dp;
 	int ffd;
-	while ((dp = readdir(d)) != NULL){
-		if(!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")){
+	while ((dp = readdir(d)) != NULL) {
+		if(!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) {
 			continue;
 		}
-		if ((ffd = openat(dir_fd, dp->d_name, O_RDONLY)) == -1){
+		if ((ffd = openat(dir_fd, dp->d_name, O_RDONLY)) == -1) {
 			perror(dp->d_name);
 			continue;
 		}
@@ -194,7 +194,7 @@ void handle_directory_request(int out_fd, int dir_fd, char *filename){
 		strftime(m_time, sizeof(m_time),
 				 "%Y-%m-%d %H:%M", localtime(&statbuf.st_mtime));
 		format_size(size, &statbuf);
-		if(S_ISREG(statbuf.st_mode) || S_ISDIR(statbuf.st_mode)){
+		if(S_ISREG(statbuf.st_mode) || S_ISDIR(statbuf.st_mode)) {
 			char *d = S_ISDIR(statbuf.st_mode) ? "/" : "";
 			sprintf(buf, "<tr><td><a href=\"%s%s\">%s%s</a></td><td>%s</td><td>%s</td></tr>\n",
 					dp->d_name, d, dp->d_name, d, m_time, size);
@@ -207,12 +207,12 @@ void handle_directory_request(int out_fd, int dir_fd, char *filename){
 	closedir(d);
 }
 
-static const char* get_mime_type(char *filename){
+static const char* get_mime_type(char *filename) {
 	char *dot = strrchr(filename, '.');
-	if(dot){ // strrchar Locate last occurrence of character in string
+	if(dot) { // strrchar Locate last occurrence of character in string
 		mime_map *map = meme_types;
-		while(map->extension){
-			if(strcmp(map->extension, dot) == 0){
+		while(map->extension) {
+			if(strcmp(map->extension, dot) == 0) {
 				return map->mime_type;
 			}
 			map++;
@@ -222,25 +222,25 @@ static const char* get_mime_type(char *filename){
 }
 
 
-int open_listenfd(int port){
+int open_listenfd(int port) {
 	int listenfd, optval=1;
 	struct sockaddr_in serveraddr;
 
 	/* Create a socket descriptor */
-	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		return -1;
 	}
 
 	/* Eliminates "Address already in use" error from bind. */
 	if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR,
-				   (const void *)&optval , sizeof(int)) < 0){
+				   (const void *)&optval , sizeof(int)) < 0) {
 		return -1;
 	}
 
 	// 6 is TCP's protocol number
 	// enable this, much faster : 4000 req/s -> 17000 req/s
 	if (setsockopt(listenfd, 6, TCP_CORK,
-				   (const void *)&optval , sizeof(int)) < 0){
+				   (const void *)&optval , sizeof(int)) < 0) {
 		return -1;
 	}
 
@@ -250,12 +250,12 @@ int open_listenfd(int port){
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serveraddr.sin_port = htons((unsigned short)port);
-	if (bind(listenfd, (SA *)&serveraddr, sizeof(serveraddr)) < 0){
+	if (bind(listenfd, (SA *)&serveraddr, sizeof(serveraddr)) < 0) {
 		return -1;
 	}
 
 	/* Make it a listening socket ready to accept connection requests */
-	if (listen(listenfd, LISTENQ) < 0){
+	if (listen(listenfd, LISTENQ) < 0) {
 		return -1;
 	}
 	return listenfd;
@@ -276,7 +276,7 @@ void url_decode(char* src, char* dest, int max) {
 	*dest = '\0';
 }
 
-void parse_request(int fd, http_request *req){
+void parse_request(int fd, http_request *req) {
 	rio_t rio;
 	char buf[MAXLINE], method[MAXLINE], uri[MAXLINE];
 	req->offset = 0;
@@ -288,17 +288,17 @@ void parse_request(int fd, http_request *req){
 	/* read all */
 	while(buf[0] != '\n' && buf[1] != '\n') { /* \n || \r\n */
 		rio_readlineb(&rio, buf, MAXLINE);
-		if(buf[0] == 'R' && buf[1] == 'a' && buf[2] == 'n'){
+		if(buf[0] == 'R' && buf[1] == 'a' && buf[2] == 'n') {
 			sscanf(buf, "Range: bytes=%lu-%lu", &req->offset, &req->end);
 			// Range: [start, end]
 			if( req->end != 0) {req->end ++;}
 		}
 	}
 	char* filename = uri;
-	if(uri[0] == '/'){
+	if(uri[0] == '/') {
 		filename = uri + 1;
 		int length = strlen(filename);
-		if (length == 0){
+		if (length == 0) {
 			filename = ".";
 		} else {
 			for (int i = 0; i < length; ++ i) {
@@ -313,12 +313,12 @@ void parse_request(int fd, http_request *req){
 }
 
 
-void log_access(int status, struct sockaddr_in *c_addr, http_request *req){
+void log_access(int status, struct sockaddr_in *c_addr, http_request *req) {
 	printf("%s:%d %d - %s\n", inet_ntoa(c_addr->sin_addr),
 		   ntohs(c_addr->sin_port), status, req->filename);
 }
 
-void client_error(int fd, int status, char *msg, char *longmsg){
+void client_error(int fd, int status, char *msg, char *longmsg) {
 	char buf[MAXLINE];
 	sprintf(buf, "HTTP/1.1 %d %s\r\n", status, msg);
 	sprintf(buf + strlen(buf),
@@ -328,9 +328,9 @@ void client_error(int fd, int status, char *msg, char *longmsg){
 }
 
 void serve_static(int out_fd, int in_fd, http_request *req,
-				  size_t total_size){
+				  size_t total_size) {
 	char buf[256];
-	if (req->offset > 0){
+	if (req->offset > 0) {
 		sprintf(buf, "HTTP/1.1 206 Partial\r\n");
 		sprintf(buf + strlen(buf), "Content-Range: bytes %lu-%lu/%lu\r\n",
 				req->offset, req->end, total_size);
@@ -347,7 +347,7 @@ void serve_static(int out_fd, int in_fd, http_request *req,
 
 	writen(out_fd, buf, strlen(buf));
 	off_t offset = req->offset; /* copy */
-	while(offset < req->end){
+	while(offset < req->end) {
 		if(sendfile(out_fd, in_fd, &offset, req->end - req->offset) <= 0) {
 			break;
 		}
@@ -357,28 +357,28 @@ void serve_static(int out_fd, int in_fd, http_request *req,
 	}
 }
 
-void process(int fd, struct sockaddr_in *clientaddr){
+void process(int fd, struct sockaddr_in *clientaddr) {
 	printf("accept request, fd is %d, pid is %d\n", fd, getpid());
 	http_request req;
 	parse_request(fd, &req);
 
 	struct stat sbuf;
 	int status = 200, ffd = open(req.filename, O_RDONLY, 0);
-	if(ffd <= 0){
+	if(ffd <= 0) {
 		status = 404;
 		char *msg = "File not found";
 		client_error(fd, status, "Not found", msg);
 	} else {
 		fstat(ffd, &sbuf);
-		if(S_ISREG(sbuf.st_mode)){
-			if (req.end == 0){
+		if(S_ISREG(sbuf.st_mode)) {
+			if (req.end == 0) {
 				req.end = sbuf.st_size;
 			}
-			if (req.offset > 0){
+			if (req.offset > 0) {
 				status = 206;
 			}
 			serve_static(fd, ffd, &req, sbuf.st_size);
-		} else if(S_ISDIR(sbuf.st_mode)){
+		} else if(S_ISDIR(sbuf.st_mode)) {
 			status = 200;
 			handle_directory_request(fd, ffd, req.filename);
 		} else {
@@ -391,7 +391,7 @@ void process(int fd, struct sockaddr_in *clientaddr){
 	log_access(status, clientaddr, &req);
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
 	struct sockaddr_in clientaddr;
 	int default_port = 9999,
 		listenfd,
@@ -432,7 +432,7 @@ int main(int argc, char** argv){
 	for(int i = 0; i < 10; i++) {
 		int pid = fork();
 		if (pid == 0) {		 //  child
-			while(1){
+			while(1) {
 				connfd = accept(listenfd, (SA *)&clientaddr, &clientlen);
 				process(connfd, &clientaddr);
 				close(connfd);
@@ -444,7 +444,7 @@ int main(int argc, char** argv){
 		}
 	}
 
-	while(1){
+	while(1) {
 		connfd = accept(listenfd, (SA *)&clientaddr, &clientlen);
 		process(connfd, &clientaddr);
 		close(connfd);
