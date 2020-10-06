@@ -395,7 +395,24 @@ void process(int fd, struct sockaddr_in *clientaddr) {
 	log_access(status, clientaddr, &req);
 }
 
+void print_help()
+{
+	printf("TINY WEBSERVER HELP\n");
+	printf("tiny            #use default port, serve current dir\n");
+	printf("tiny /tmp       #use default port, serve given dir\n");
+	printf("tiny 1234       #use given port, serve current dir\n");
+	printf("tiny /tmp 1234  #use given port, serve given dir\n");
+	printf("default port is %d.\n", DEFAULT_PORT);
+}
+
 int main(int argc, char** argv) {
+
+	if(argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))
+	{
+		print_help();
+		return 0;
+	}
+
 	struct sockaddr_in clientaddr;
 	int default_port = DEFAULT_PORT,
 		listenfd,
