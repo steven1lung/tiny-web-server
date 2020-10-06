@@ -304,7 +304,8 @@ void parse_request(int fd, http_request *req) {
 		if (length == 0) {
 			filename = ".";
 		} else {
-			for (int i = 0; i < length; ++ i) {
+			int i=0;
+			for (; i < length; ++ i) {
 				if (filename[i] == '?') {
 					filename[i] = '\0';
 					break;
@@ -432,7 +433,8 @@ int main(int argc, char** argv) {
 	// won't kill the whole process.
 	signal(SIGPIPE, SIG_IGN);
 
-	for(int i = 0; i < FORK_COUNT; i++) {
+	int i=0;
+	for(; i < FORK_COUNT; i++) {
 		int pid = fork();
 		if (pid == 0) {		 //  child
 			while(1) {
