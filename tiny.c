@@ -439,6 +439,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	printf("serve directory '%s'\n", path);
+
 	listenfd = open_listenfd(default_port);
 	if (listenfd > 0) {
 		printf("listen on port %d, fd is %d\n", default_port, listenfd);
