@@ -19,6 +19,9 @@
 #define MAXLINE 1024   /* max length of a line */
 #define RIO_BUFSIZE 1024
 
+#define DEFAULT_PORT 9999 /* use this port if none given as arg to main() */
+#define FORK_COUNT 4
+
 typedef struct {
 	int rio_fd;                 /* descriptor for this buf */
 	int rio_cnt;                /* unread byte in this buf */
@@ -393,7 +396,7 @@ void process(int fd, struct sockaddr_in *clientaddr) {
 
 int main(int argc, char** argv) {
 	struct sockaddr_in clientaddr;
-	int default_port = 9999,
+	int default_port = DEFAULT_PORT,
 		listenfd,
 		connfd;
 	char buf[256];
@@ -429,7 +432,7 @@ int main(int argc, char** argv) {
 	// won't kill the whole process.
 	signal(SIGPIPE, SIG_IGN);
 
-	for(int i = 0; i < 10; i++) {
+	for(int i = 0; i < FORK_COUNT; i++) {
 		int pid = fork();
 		if (pid == 0) {		 //  child
 			while(1) {
