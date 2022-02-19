@@ -3,7 +3,7 @@ A tiny web server in C
 
 I am reading
 [Computer Systems: A Programmer's Perspective](http://csapp.cs.cmu.edu/).
-It teachers me how to write a tiny web server in C.
+It teaches me how to write a tiny web server in C.
 
 I have written another
 [tiny web server](https://github.com/shenfeng/nio-httpserver) in JAVA.
